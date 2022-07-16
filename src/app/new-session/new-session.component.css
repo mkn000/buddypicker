@@ -1,0 +1,21 @@
+#container {
+  display:flex;
+  flex-direction: row;
+}
+
+#container > * {
+  border: 1px solid blue;
+  padding: 5px;
+}
+
+ul {
+  padding-inline-start: 5px;
+}
+
+li {
+  list-style-type: none;
+}
+
+mat-form-field .mat-form-field {
+  text-align: left;
+}

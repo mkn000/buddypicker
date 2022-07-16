@@ -1,0 +1,14 @@
+<div class="container">
+  <form (submit)="fetchSession(sessionId.value); sessionId.value = ''">
+    <label
+      >Session ID
+      <input #sessionId />
+    </label>
+    <button mat-stroked-button color="primary" type="submit">
+      Find session
+    </button>
+  </form>
+  <button mat-stroked-button color="primary" (click)="createNew()">
+    Create new
+  </button>
+</div>

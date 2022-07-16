@@ -1,0 +1,54 @@
+<button mat-stroked-button color="primary" (click)="goHome()">
+  <mat-icon>arrow_back</mat-icon>
+  Return
+</button>
+<div *ngIf="validSession; else invalidSession" class="container">
+  <div class="userlist">
+    <p>Participants: {{ nUsers }}</p>
+    <ul>
+      <li *ngFor="let u of session.users | keyvalue">{{ u.value.name }}</li>
+    </ul>
+  </div>
+  <div class="form">
+    <div class="info">
+      Host: {{ session.host.name }} | ID: {{ session.sesId }} <br />
+      {{ session.details.description }}
+    </div>
+    <form
+      (ngSubmit)="joined ? leaveSession() : joinSession()"
+      #creation="ngForm"
+    >
+      <div class="form-group">
+        <mat-form-field>
+          <mat-label>Name</mat-label>
+          <input matInput [(ngModel)]="form.name" [disabled]="joined" />
+        </mat-form-field>
+        <br />
+        <mat-form-field>
+          <mat-label>{{ session.details.extra }}</mat-label>
+          <input matInput [(ngModel)]="form.name_alt" [disabled]="joined" />
+        </mat-form-field>
+        <br />
+      </div>
+      <button
+        mat-raised-button
+        [color]="joined ? 'warn' : 'primary'"
+        type="submit"
+      >
+        {{ joined ? "Leave session" : "Join Session" }}
+      </button>
+    </form>
+  </div>
+</div>
+<ng-template #invalidSession>
+  <div>
+    <p>
+      A session with provided id
+      <span color="warn"
+        ><strong>{{ session.sesId }}</strong></span
+      >
+      was not found
+    </p>
+    <br />
+  </div>
+</ng-template>
