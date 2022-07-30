@@ -27,8 +27,8 @@ export class SocketService {
     return this.socket.fromEvent('remove_user');
   }
 
-  getMessages() {
-    return this.socket.fromEvent('messages');
+  getMessages(): Observable<string> {
+    return this.socket.fromEvent('message');
   }
 
   onConnect() {
@@ -65,7 +65,11 @@ export class SocketService {
     this.socket.emit('create', ses, callback);
   }
 
-  sendMessage(data: { name: string; msg: string }) {
-    this.socket.emit('messages', data);
+  sessionClosed() {
+    return this.socket.fromEvent('session_closed');
+  }
+
+  sendMessage(clients: string[], msg: string) {
+    this.socket.emit('send_message', clients, msg);
   }
 }

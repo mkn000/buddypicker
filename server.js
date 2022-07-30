@@ -32,6 +32,7 @@ server.on("error", onError);
  */
 
 let rooms = new Map();
+let clients = {};
 const io = new Server(server);
 io.on("connection", (socket) => {
   console.log("New connection, id: " + socket.id);
@@ -68,6 +69,7 @@ io.on("connection", (socket) => {
         socket.to(key).emit("new_user", user);
       });
       socket.to(room.host.id).emit("new_user", user);
+      clients[socket.id] = sesId;
       callback({
         success: true,
       });
@@ -83,6 +85,7 @@ io.on("connection", (socket) => {
     try {
       const room = rooms.get(sesId);
       delete room.users[socket.id];
+      delete clients[socket.id];
       Object.keys(room.users).forEach((key) => {
         socket.to(key).emit("remove_user", socket.id);
       });
@@ -101,7 +104,42 @@ io.on("connection", (socket) => {
     console.log("New session created, id: " + sesId);
     ses.sesId = sesId;
     rooms.set(sesId, ses);
+    clients[socket.id] = sesId;
     callback({ sesId: sesId });
+  });
+
+  socket.on("send_message", (clients, msg) => {
+    clients.forEach((client) => {
+      socket.to(client).emit("message", msg);
+    });
+  });
+
+  socket.on("disconnect", (reason) => {
+    try {
+      console.log(reason);
+      let sesId = clients[socket.id];
+      let room = rooms.get(sesId);
+      if (!(sesId && room)) {
+        console.log("nothing to do");
+        return;
+      }
+
+      if (socket.id === room.host.id) {
+        Object.keys(room.users).forEach((key) => {
+          socket.to(key).emit("session_closed");
+        });
+        rooms.delete(sesId);
+      } else {
+        delete room.users[socket.id];
+        delete clients[socket.id];
+        Object.keys(room.users).forEach((key) => {
+          socket.to(key).emit("remove_user", socket.id);
+        });
+        socket.to(room.host.id).emit("remove_user", socket.id);
+      }
+    } catch {
+      console.log("session was already closed");
+    }
   });
 });
 

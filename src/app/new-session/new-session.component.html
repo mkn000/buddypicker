@@ -1,80 +1,110 @@
 <div id="container">
-  <div class="userlist">
-    <h3>Participants:</h3>
-    <ul>
-      <li *ngFor="let u of users | keyvalue">
-        {{ u.value.name }}
-      </li>
-    </ul>
-  </div>
-  <div class="form">
-    <h3>
-      Participation Form <span *ngIf="sesId">ID: {{ sesId }}</span>
-    </h3>
-    <form (ngSubmit)="createSession()" #creation="ngForm">
-      <div class="form-group">
-        <mat-form-field>
-          <mat-label>Name</mat-label>
-          <input matInput [(ngModel)]="form.name" />
-        </mat-form-field>
+  <mat-accordion>
+    <mat-expansion-panel [expanded]="step === 0" (opened)="setStep(0)">
+      <mat-expansion-panel-header>
+        <mat-panel-title>Creation form</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="form">
+        <form (ngSubmit)="createSession(); nextStep()" #creation="ngForm">
+          <div class="form-group">
+            <mat-form-field>
+              <mat-label>Name</mat-label>
+              <input matInput [(ngModel)]="form.name" />
+            </mat-form-field>
+            <br />
+            <mat-form-field>
+              <mat-label>Additional identification</mat-label>
+              <input matInput [(ngModel)]="form.extra" />
+              <mat-hint>Game account or something similar</mat-hint>
+            </mat-form-field>
+            <br />
+            <mat-form-field>
+              <mat-label>Description</mat-label>
+              <textarea
+                matInput
+                rows="3"
+                cols="10"
+                [(ngModel)]="form.description"
+              ></textarea>
+            </mat-form-field>
+          </div>
+          <mat-action-row>
+            <button mat-stroked-button color="primary" type="submit">
+              Open session
+            </button>
+          </mat-action-row>
+        </form>
+      </div>
+    </mat-expansion-panel>
+    <mat-expansion-panel [expanded]="step === 1" (opened)="setStep(1)">
+      <mat-expansion-panel-header>
+        <mat-panel-title>Member selection</mat-panel-title>
+      </mat-expansion-panel-header>
+      <h3>
+        Session <span *ngIf="sesId">ID: {{ sesId }}</span>
+        <button mat-stroked-button color="primary" (click)="copyLink()">
+          Copy link
+        </button>
+      </h3>
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>Participants: {{ nUsers }}</mat-panel-title>
+        </mat-expansion-panel-header>
+        <div class="userlist">
+          <ul>
+            <li *ngFor="let u of users | keyvalue">
+              {{ u.value.name }}
+            </li>
+          </ul>
+        </div>
+      </mat-expansion-panel>
+      <div class="controls">
+        <p>Member luck</p>
+        <mat-slider
+          min="0"
+          max="100"
+          step="5"
+          value="0"
+          thumbLabel
+          [(ngModel)]="memberLuck"
+          [displayWith]="formatLabel"
+        ></mat-slider>
         <br />
-        <mat-form-field>
-          <mat-label>Additional identification</mat-label>
-          <input matInput [(ngModel)]="form.extra" />
-          <mat-hint>Game account or something similar</mat-hint>
-        </mat-form-field>
-        <br />
-        <mat-form-field>
-          <mat-label>Description</mat-label>
-          <textarea
+        <mat-form-field style="text-align: left; width: 50px">
+          <mat-label>Group size</mat-label>
+          <input
+            placeholder="1"
             matInput
-            rows="3"
-            cols="10"
-            [(ngModel)]="form.description"
-          ></textarea>
+            [(ngModel)]="groupSize"
+            style="text-align: center"
+          />
         </mat-form-field>
+        <br />
+        <button mat-stroked-button color="primary" (click)="selectGroup()">
+          Select Group
+        </button>
       </div>
-      <button mat-stroked-button color="primary" type="submit">
-        Open session
-      </button>
-    </form>
-  </div>
-  <div class="controls">
-    <h3>Selector settings</h3>
-    <p>Member luck</p>
-    <mat-slider
-      min="1"
-      max="5"
-      step="1"
-      value="1"
-      thumbLabel
-      [(ngModel)]="memberLuck"
-      [displayWith]="formatLabel"
-    ></mat-slider>
-    <br />
-    <mat-form-field style="text-align: left; width: 50px">
-      <mat-label>Group size</mat-label>
-      <input
-        placeholder="1"
-        matInput
-        [(ngModel)]="groupSize"
-        style="text-align: center"
-      />
-    </mat-form-field>
-    <br />
-    <button mat-stroked-button color="primary" (click)="selectGroup()">
-      Select Group
-    </button>
-  </div>
-  <div class="groups">
-    <div *ngFor="let group of groups">
-      <div class="userlist">
-        <ul>
-          <li *ngFor="let user of group">
-            {{ users[user].name }}
-          </li>
-        </ul>
+      <div class="groups">
+        <div *ngFor="let group of groups; let i = index">
+          <div class="userlist">
+            <ul>
+              <li *ngFor="let user of group">
+                {{ users[user].name }}
+              </li>
+            </ul>
+          </div>
+          <mat-form-field>
+            <mat-label>Message</mat-label>
+            <textarea
+              matInput
+              rows="2"
+              cols="7"
+              [(ngModel)]="messages[i]"
+              (keyup.enter)="sendMessage(i)"
+            ></textarea>
+          </mat-form-field>
+        </div>
       </div>
-    </div>
-  </div>
+    </mat-expansion-panel>
+  </mat-accordion>
 </div>

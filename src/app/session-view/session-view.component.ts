@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { SocketService } from '../socket.service';
@@ -24,11 +25,13 @@ export class SessionViewComponent implements OnInit, OnDestroy {
     name: string;
     name_alt: string;
   };
+  messages: string[] = [];
 
   constructor(
     private socketService: SocketService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    public dialog: MatDialog
   ) {
     this.session = {
       host: { name: '', id: '' },
@@ -43,7 +46,7 @@ export class SessionViewComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.route.data.subscribe((data) => {
+    this.route.data.pipe(takeUntil(this.unsub)).subscribe((data) => {
       console.log(data);
       if (!data['session']) {
         this.validSession = false;
@@ -68,16 +71,29 @@ export class SessionViewComponent implements OnInit, OnDestroy {
         }
       });
 
-    this.socketService.addUser().subscribe((resp: User) => {
-      console.log('new user: ' + resp);
-      this.session.users[resp.id] = resp;
-      this.updateNUsers(1);
-    });
+    this.socketService
+      .addUser()
+      .pipe(takeUntil(this.unsub))
+      .subscribe((resp: User) => {
+        console.log('new user: ' + resp);
+        this.session.users[resp.id] = resp;
+        this.updateNUsers(1);
+      });
 
-    this.socketService.removeUser().subscribe((id: string) => {
-      delete this.session.users[id];
-      this.updateNUsers(-1);
-    });
+    this.socketService
+      .removeUser()
+      .pipe(takeUntil(this.unsub))
+      .subscribe((id: string) => {
+        delete this.session.users[id];
+        this.updateNUsers(-1);
+      });
+
+    this.socketService
+      .sessionClosed()
+      .pipe(takeUntil(this.unsub))
+      .subscribe(() => {
+        this.openDialog();
+      });
   }
 
   joinSession(): void {
@@ -97,6 +113,12 @@ export class SessionViewComponent implements OnInit, OnDestroy {
         this.updateNUsers(1);
       }
     });
+    this.socketService
+      .getMessages()
+      .pipe(takeUntil(this.unsub))
+      .subscribe((msg: string) => {
+        this.messages.push(msg);
+      });
   }
 
   leaveSession(): void {
@@ -118,5 +140,39 @@ export class SessionViewComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.unsub.next(true);
     this.unsub.complete();
+  }
+
+  openDialog(): void {
+    const dialogRef = this.dialog.open(SessionCloseDialogComponent, {
+      width: '250px',
+      data: {},
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      console.log('The dialog was closed');
+      this.joined = false;
+      this.router.navigate(['']);
+    });
+  }
+}
+
+export interface DialogData {
+  animal: string;
+  name: string;
+}
+
+@Component({
+  selector: 'app-session-close-dialog',
+  template: `<div mat-dialog-content>The host has closed the session</div>
+    <div mat-dialog-actions>
+      <button mat-stroked-button mat-dialog-close color="primary">Ok</button>
+    </div>`,
+  styles: [],
+})
+export class SessionCloseDialogComponent {
+  constructor(public dialogRef: MatDialogRef<SessionCloseDialogComponent>) {}
+
+  onNoClick(): void {
+    this.dialogRef.close();
   }
 }

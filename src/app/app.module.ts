@@ -11,6 +11,7 @@ import { NewSessionComponent } from './new-session/new-session.component';
 import { SessionManagerComponent } from './session-manager/session-manager.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatButtonModule } from '@angular/material/button';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -36,6 +37,7 @@ const config: SocketIoConfig = {
     AppRoutingModule,
     FormsModule,
     MatButtonModule,
+    MatExpansionModule,
     MatDialogModule,
     MatFormFieldModule,
     MatIconModule,

@@ -39,6 +39,9 @@
       </button>
     </form>
   </div>
+  <div *ngIf="messages.length">
+    <p *ngFor="let msg of messages">{{ msg }}</p>
+  </div>
 </div>
 <ng-template #invalidSession>
   <div>

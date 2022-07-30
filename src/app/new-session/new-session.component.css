@@ -8,6 +8,15 @@
   padding: 5px;
 }
 
+.mat-accordion {
+  width: 100%;
+}
+
+.mat-expansion-panel-body {
+  display: flex;
+  justify-content: space-around;
+}
+
 ul {
   padding-inline-start: 5px;
 }

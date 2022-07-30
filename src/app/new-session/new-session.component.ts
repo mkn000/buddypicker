@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Clipboard } from '@angular/cdk/clipboard';
 import { SocketService } from '../socket.service';
 import { Subject, takeUntil } from 'rxjs';
 import { RafflerService } from '../raffler.service';
@@ -9,21 +10,24 @@ import { RafflerService } from '../raffler.service';
   styleUrls: ['./new-session.component.css'],
 })
 export class NewSessionComponent implements OnInit, OnDestroy {
+  step: number = 0;
   unsub = new Subject();
   memberLuck: number = 1;
   groupSize: number = 1;
+  messages: string[] = [];
   form: { name: string; description: string; extra: string } = {
     name: '',
     description: '',
     extra: '',
   };
-  sesId: string = '';
+  sesId: string | null = null;
   users: { [key: string]: any } = {};
   nUsers: number = 0;
   groups: Array<string[]> = [];
   constructor(
     private socketService: SocketService,
-    private raffler: RafflerService
+    private raffler: RafflerService,
+    private clipBoard: Clipboard
   ) {}
 
   ngOnInit(): void {
@@ -43,6 +47,11 @@ export class NewSessionComponent implements OnInit, OnDestroy {
         this.updateNUsers(-1);
         console.log(this.users);
       });
+  }
+
+  copyLink() {
+    console.log(`${location.origin}/join/${this.sesId}`);
+    this.clipBoard.copy(`${location.origin}/join/${this.sesId}`);
   }
 
   createSession() {
@@ -65,15 +74,36 @@ export class NewSessionComponent implements OnInit, OnDestroy {
   }
 
   formatLabel(value: number) {
-    return value + 'x';
+    return value + '%';
   }
 
   updateNUsers(val: number) {
     this.nUsers += val;
   }
 
+  sendMessage(i: number) {
+    this.socketService.sendMessage(this.groups[i], this.messages[i]);
+    this.messages[i] = '';
+  }
+
   ngOnDestroy(): void {
+    if (this.sesId) {
+      console.log('leaving');
+      this.socketService.leaveSession('sesId');
+    }
     this.unsub.next(true);
     this.unsub.complete();
+  }
+
+  setStep(index: number) {
+    this.step = index;
+  }
+
+  nextStep() {
+    this.step++;
+  }
+
+  prevStep() {
+    this.step--;
   }
 }
