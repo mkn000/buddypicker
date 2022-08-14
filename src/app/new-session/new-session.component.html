@@ -27,6 +27,115 @@
                 [(ngModel)]="form.description"
               ></textarea>
             </mat-form-field>
+            <br />
+            <!--
+            <h3>Insider identification</h3>
+            <div class="custom-radio-group">
+              <div>
+                <input
+                  type="radio"
+                  id="insider-pw"
+                  value="pw"
+                  name="insider-pw"
+                  [(ngModel)]="form.insider.method"
+                />
+                <label for="stream-none">Password</label>
+              </div>
+              <mat-form-field *ngIf="form.insider.method === 'pw'">
+                <mat-label>Password</mat-label>
+                <input matInput [(ngModel)]="form.insider.passwordValue" />
+              </mat-form-field>
+            </div>
+            <div class="custom-radio-group">
+              <div>
+                <input
+                  type="radio"
+                  id="yt-chat"
+                  value="yt_chat"
+                  name="yt-chat"
+                  [(ngModel)]="form.insider.method"
+                />
+                <label for="yt-chat">Youtube Chat</label>
+              </div>
+              <mat-form-field *ngIf="form.insider.method === 'yt_chat'">
+                <mat-label>Stream Url</mat-label>
+                <input matInput [(ngModel)]="form.insider.ytUrl" />
+              </mat-form-field>
+              <mat-form-field *ngIf="form.insider.method === 'yt_chat'">
+                <mat-label>Keyword</mat-label>
+                <input matInput [(ngModel)]="form.insider.ytKeyword" />
+              </mat-form-field>
+            </div>
+            <div class="custom-radio-group">
+              <div>
+                <input
+                  type="radio"
+                  id="twitch-chat"
+                  value="twitch_chat"
+                  name="twitch-chat"
+                  [(ngModel)]="form.insider.method"
+                />
+                <label for="twitch-chat">Twitch Chat</label>
+              </div>
+              <div></div>
+              <mat-form-field *ngIf="form.insider.method === 'yt_chat'">
+                <mat-label>Keyword</mat-label>
+                <input matInput [(ngModel)]="form.insider.ytKeyword" />
+              </mat-form-field>
+            </div>
+            <br />
+          -->
+            <h3>Stream</h3>
+            <div class="custom-radio-group">
+              <div>
+                <input
+                  type="radio"
+                  id="stream-none"
+                  value="none"
+                  name="stream"
+                  [(ngModel)]="form.stream.platform"
+                />
+                <label for="stream-none">None</label>
+              </div>
+              <div>
+                <input
+                  type="radio"
+                  id="yt"
+                  value="yt"
+                  name="stream"
+                  [(ngModel)]="form.stream.platform"
+                />
+                <label for="yt">Youtube</label>
+              </div>
+            </div>
+            <h3>Member confirmation</h3>
+            <div class="custom-radio-group">
+              <div>
+                <input
+                  type="radio"
+                  id="method-none"
+                  value="none"
+                  aria-labelledby="method-radio"
+                  name="method"
+                  [(ngModel)]="form.stream.member.method"
+                />
+                <label for="method-none">None</label>
+              </div>
+              <div>
+                <input
+                  type="radio"
+                  id="pw"
+                  value="password"
+                  name="method"
+                  [(ngModel)]="form.stream.member.method"
+                />
+                <label for="pw">Password</label>
+              </div>
+              <mat-form-field *ngIf="form.stream.member.method === 'password'"
+                ><input matInput [(ngModel)]="form.stream.member.value" />
+                <mat-hint>Password</mat-hint>
+              </mat-form-field>
+            </div>
           </div>
           <mat-action-row>
             <button mat-stroked-button color="primary" type="submit">
@@ -36,56 +145,60 @@
         </form>
       </div>
     </mat-expansion-panel>
-    <mat-expansion-panel [expanded]="step === 1" (opened)="setStep(1)">
+    <mat-expansion-panel [expanded]="step === 1 && sesId" (opened)="setStep(1)">
       <mat-expansion-panel-header>
         <mat-panel-title>Member selection</mat-panel-title>
       </mat-expansion-panel-header>
       <h3>
         Session <span *ngIf="sesId">ID: {{ sesId }}</span>
-        <button mat-stroked-button color="primary" (click)="copyLink()">
+        <button mat-flat-button color="link" (click)="copyLink()">
           Copy link
         </button>
       </h3>
+      <p>
+        Host: {{ form.name }}<br />
+        Additional information: {{ form.extra }}<br />
+        Description: {{ form.description }}
+      </p>
       <mat-expansion-panel>
         <mat-expansion-panel-header>
           <mat-panel-title>Participants: {{ nUsers }}</mat-panel-title>
         </mat-expansion-panel-header>
         <div class="userlist">
           <ul>
-            <li *ngFor="let u of users | keyvalue">
+            <li
+              *ngFor="let u of users | keyvalue"
+              [class.member]="u.value.isMember"
+            >
               {{ u.value.name }}
             </li>
           </ul>
         </div>
       </mat-expansion-panel>
       <div class="controls">
-        <p>Member luck</p>
-        <mat-slider
-          min="0"
-          max="100"
-          step="5"
-          value="0"
-          thumbLabel
-          [(ngModel)]="memberLuck"
-          [displayWith]="formatLabel"
-        ></mat-slider>
-        <br />
-        <mat-form-field style="text-align: left; width: 50px">
-          <mat-label>Group size</mat-label>
-          <input
-            placeholder="1"
-            matInput
-            [(ngModel)]="groupSize"
-            style="text-align: center"
-          />
-        </mat-form-field>
+        <div class="slider">
+          <p>Member luck</p>
+          <mat-slider
+            min="0"
+            max="100"
+            step="5"
+            value="50"
+            thumbLabel
+            [(ngModel)]="memberLuck"
+            [displayWith]="formatLabel"
+          ></mat-slider>
+        </div>
         <br />
         <button mat-stroked-button color="primary" (click)="selectGroup()">
           Select Group
         </button>
+        <div *ngIf="raffleError">
+          <span color="warn">{{ raffleError }}</span>
+        </div>
       </div>
-      <div class="groups">
-        <div *ngFor="let group of groups; let i = index">
+      <div class="groups-top">
+        <div *ngFor="let group of groups; let i = index" class="group">
+          <h4>#{{ i }}</h4>
           <div class="userlist">
             <ul>
               <li *ngFor="let user of group">
@@ -93,16 +206,19 @@
               </li>
             </ul>
           </div>
-          <mat-form-field>
-            <mat-label>Message</mat-label>
-            <textarea
-              matInput
-              rows="2"
-              cols="7"
-              [(ngModel)]="messages[i]"
-              (keyup.enter)="sendMessage(i)"
-            ></textarea>
-          </mat-form-field>
+          <div class="messages" *ngIf="group.length">
+            <p>Messages</p>
+            <mat-form-field>
+              <mat-label>Send message</mat-label>
+              <textarea
+                matInput
+                rows="2"
+                cols="7"
+                [(ngModel)]="groupMsgs[i]"
+                (keyup.enter)="sendMessage(i)"
+              ></textarea>
+            </mat-form-field>
+          </div>
         </div>
       </div>
     </mat-expansion-panel>

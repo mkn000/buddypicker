@@ -30,6 +30,17 @@
         </mat-form-field>
         <br />
       </div>
+      <div *ngIf="session.details.stream.member.method === 'password'">
+        <mat-form-field>
+          <mat-label>Password</mat-label>
+          <input matInput [(ngModel)]="passwordAttempt" />
+        </mat-form-field>
+        <mat-icon
+          color="green"
+          *ngIf="passwordAttempt === session.details.stream.member.value"
+          >check</mat-icon
+        >
+      </div>
       <button
         mat-raised-button
         [color]="joined ? 'warn' : 'primary'"

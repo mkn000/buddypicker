@@ -7,6 +7,7 @@ import { environment } from 'src/environments/environment';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SessionViewComponent } from './session-view/session-view.component';
+import { SessionCloseDialogComponent } from './session-view/session-view.component';
 import { NewSessionComponent } from './new-session/new-session.component';
 import { SessionManagerComponent } from './session-manager/session-manager.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -16,6 +17,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatRadioModule } from '@angular/material/radio';
 import { MatSliderModule } from '@angular/material/slider';
 
 const config: SocketIoConfig = {
@@ -29,6 +31,7 @@ const config: SocketIoConfig = {
   declarations: [
     AppComponent,
     SessionViewComponent,
+    SessionCloseDialogComponent,
     NewSessionComponent,
     SessionManagerComponent,
   ],
@@ -42,6 +45,7 @@ const config: SocketIoConfig = {
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
+    MatRadioModule,
     MatSliderModule,
     SocketIoModule.forRoot(config),
     BrowserAnimationsModule,

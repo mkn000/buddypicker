@@ -5,8 +5,6 @@ import {
   Router,
   Resolve,
 } from '@angular/router';
-import { EMPTY, Observable, of } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
 import { SocketService } from './socket.service';
 
 @Injectable({

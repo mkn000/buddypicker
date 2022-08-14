@@ -69,7 +69,7 @@ io.on("connection", (socket) => {
         socket.to(key).emit("new_user", user);
       });
       socket.to(room.host.id).emit("new_user", user);
-      clients[socket.id] = sesId;
+      clients[socket.id] = { session: sesId };
       callback({
         success: true,
       });
@@ -104,7 +104,7 @@ io.on("connection", (socket) => {
     console.log("New session created, id: " + sesId);
     ses.sesId = sesId;
     rooms.set(sesId, ses);
-    clients[socket.id] = sesId;
+    clients[socket.id] = { session: sesId };
     callback({ sesId: sesId });
   });
 
@@ -114,10 +114,24 @@ io.on("connection", (socket) => {
     });
   });
 
+  socket.on("update_id", (data) => {
+    console.log(data);
+    clearTimeout(clients[data.oldId].timer);
+    let room = rooms.get(data.sesId);
+    if (data.oldId === room.host.id) {
+      room.host.id = data.currentId;
+      clients[data.currentId] = data.sesId;
+      delete clients[data.oldId];
+    } else {
+      let user = rooms.get(data.sesId).users[data.old_id];
+      user.id = data.current_id;
+    }
+  });
+
   socket.on("disconnect", (reason) => {
     try {
       console.log(reason);
-      let sesId = clients[socket.id];
+      let sesId = clients[socket.id].session;
       let room = rooms.get(sesId);
       if (!(sesId && room)) {
         console.log("nothing to do");
@@ -125,17 +139,22 @@ io.on("connection", (socket) => {
       }
 
       if (socket.id === room.host.id) {
-        Object.keys(room.users).forEach((key) => {
-          socket.to(key).emit("session_closed");
-        });
-        rooms.delete(sesId);
+        console.log("setting timer");
+        clients[socket.id].timer = setTimeout(() => {
+          Object.keys(room.users).forEach((key) => {
+            socket.to(key).emit("session_closed");
+          });
+          rooms.delete(sesId);
+        }, 1 * 1000); //1 minute
       } else {
-        delete room.users[socket.id];
-        delete clients[socket.id];
-        Object.keys(room.users).forEach((key) => {
-          socket.to(key).emit("remove_user", socket.id);
-        });
-        socket.to(room.host.id).emit("remove_user", socket.id);
+        clients[socket.id].timer = setTimeout(() => {
+          delete room.users[socket.id];
+          delete clients[socket.id];
+          Object.keys(room.users).forEach((key) => {
+            socket.to(key).emit("remove_user", socket.id);
+          });
+          socket.to(room.host.id).emit("remove_user", socket.id);
+        }, 15 * 1000); //15 seconds
       }
     } catch {
       console.log("session was already closed");
@@ -213,7 +232,7 @@ app.use(
   })
 );
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "./dist/member-sessions")));
+app.use(express.static(path.join(__dirname, "./dist/buddypicker")));
 
 const index = require("./utils/index");
 app.use("/", index); // index-reitti

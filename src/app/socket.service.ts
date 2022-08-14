@@ -7,16 +7,10 @@ import { User } from './User';
   providedIn: 'root',
 })
 export class SocketService {
-  private _id: string = '';
-  constructor(private socket: Socket) {
-    this.socket.on('connect', () => {
-      this._id = this.socket.ioSocket.id;
-      console.log('socket constructor,id: ' + this.id);
-    });
-  }
+  constructor(private socket: Socket) {}
 
   get id() {
-    return this._id;
+    return this.socket.ioSocket.id;
   }
 
   addUser(): Observable<User> {
@@ -71,5 +65,15 @@ export class SocketService {
 
   sendMessage(clients: string[], msg: string) {
     this.socket.emit('send_message', clients, msg);
+  }
+
+  updateID(old_data: { socketid: string; sesId: string }) {
+    let data = {
+      currentId: this.id,
+      oldId: old_data.socketid,
+      sesId: old_data.sesId,
+    };
+    console.log(data);
+    this.socket.emit('update_id', data);
   }
 }

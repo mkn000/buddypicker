@@ -12,13 +12,19 @@ import { User } from '../User';
 })
 export class SessionViewComponent implements OnInit, OnDestroy {
   private unsub = new Subject();
+  passwordAttempt: string = '';
   validSession: boolean = true;
+  memberCheck: boolean | null = null;
   joined: boolean = false;
   session: {
     host: { name: string; id: string };
     sesId: string;
     users: { [id: string]: User };
-    details: { description: string; extra: string };
+    details: {
+      description: string;
+      extra: string;
+      stream: { platform: string; member: { method: string; value: string } };
+    };
   };
   nUsers: number = 0;
   form: {
@@ -37,7 +43,11 @@ export class SessionViewComponent implements OnInit, OnDestroy {
       host: { name: '', id: '' },
       sesId: '',
       users: {},
-      details: { description: '', extra: '' },
+      details: {
+        description: '',
+        extra: '',
+        stream: { platform: '', member: { method: '', value: '' } },
+      },
     };
     this.form = {
       name: '',
@@ -47,7 +57,6 @@ export class SessionViewComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.route.data.pipe(takeUntil(this.unsub)).subscribe((data) => {
-      console.log(data);
       if (!data['session']) {
         this.validSession = false;
       } else {
@@ -60,7 +69,7 @@ export class SessionViewComponent implements OnInit, OnDestroy {
       .onConnect()
       .pipe(takeUntil(this.unsub))
       .subscribe(() => {
-        console.log('Connected to socket');
+        console.log('Connected');
         console.log(this.socketService.id);
         let userJson = sessionStorage.getItem('user');
         console.log(userJson);
@@ -103,6 +112,10 @@ export class SessionViewComponent implements OnInit, OnDestroy {
       this.form.name_alt,
       this.socketService.id
     );
+    if (this.session.details.stream.member.method === 'password') {
+      user.isMember =
+        this.passwordAttempt === this.session.details.stream.member.value;
+    }
     this.socketService.joinSession(this.session.sesId, user, (resp: any) => {
       console.log(resp);
       if (resp.success) {
@@ -144,8 +157,13 @@ export class SessionViewComponent implements OnInit, OnDestroy {
 
   openDialog(): void {
     const dialogRef = this.dialog.open(SessionCloseDialogComponent, {
-      width: '250px',
+      width: '450px',
       data: {},
+      panelClass: [
+        'mat-stroked-button',
+        'mat-dialog-close',
+        'mat-dialog-content',
+      ],
     });
 
     dialogRef.afterClosed().subscribe(() => {
@@ -156,16 +174,13 @@ export class SessionViewComponent implements OnInit, OnDestroy {
   }
 }
 
-export interface DialogData {
-  animal: string;
-  name: string;
-}
-
 @Component({
   selector: 'app-session-close-dialog',
   template: `<div mat-dialog-content>The host has closed the session</div>
     <div mat-dialog-actions>
-      <button mat-stroked-button mat-dialog-close color="primary">Ok</button>
+      <button mat-stroked-button color="primary" (click)="dialogRef.close()">
+        Close
+      </button>
     </div>`,
   styles: [],
 })

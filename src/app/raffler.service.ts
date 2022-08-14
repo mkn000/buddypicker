@@ -6,21 +6,20 @@ import { Injectable } from '@angular/core';
 export class RafflerService {
   constructor() {}
 
-  raffle(users: string[], luck: number, size: number): string[] {
-    let group: string[] = [];
-    console.log(users);
-    if (users.length <= size) {
-      group = users;
+  raffle(regulars: string[], members: string[], luck: number): string {
+    let rnd: number = Math.random();
+    let source: string[];
+    if (rnd * 100 < luck && members.length > 0) {
+      source = members;
+    } else if (regulars.length > 0) {
+      source = regulars;
     } else {
-      const max = users.length - 1;
-      for (let i = 0; i < size; i++) {
-        //Math.floor(Math.random() * (max - min +1)) + min
-        let ix = Math.floor(Math.random() * (max - i + 1));
-        console.log(ix);
-        group.push(users[ix]);
-        users.splice(ix, 1);
-      }
+      source = members;
     }
-    return group;
+    let max = source.length - 1;
+    console.log();
+    //Math.floor(Math.random() * (max - min +1)) + min
+    let ix = Math.floor(rnd * (max + 1));
+    return source[ix];
   }
 }
