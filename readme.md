@@ -9,3 +9,11 @@ Aim is to create a way for streamers to select members of the community to
 - better youtube membership confirmation (through chat)
 - twitch subscriber confirmation (chat and/or auth)
 - group control
+
+Try locally
+```
+npm i
+ng build
+node server
+```
+Navigate (by default) to `localhost:4200`
